@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Container, Typography, Card, CardContent, Button, Box, Grid } from "@mui/material";
 import { getTables } from "../api/tableApi";
+import { createOrder } from "../api/orderApi";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -27,6 +28,28 @@ export default function DashboardPage() {
     navigate("/login");
   };
 
+  const handleTableClick = async (table) => {
+    if (user.role === "pelayan") {
+      if (table.status !== "available") return;
+
+      try {
+        const response = await createOrder({
+          table_id: table.id,
+        });
+
+        const orderId = response.data.order_id;
+
+        navigate(`/orders/${orderId}`);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    if (user.role === "kasir") {
+      navigate("/orders");
+    }
+  };
+
   return (
     <Container>
       <Box display="flex" justifyContent="space-between" mt={4}>
@@ -47,6 +70,7 @@ export default function DashboardPage() {
         {tables.map((table) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={table.id}>
             <Card
+              onClick={() => handleTableClick(table)}
               sx={{
                 cursor: "pointer",
                 backgroundColor:
