@@ -44,11 +44,13 @@ export default function DashboardPage() {
         console.error(error);
       }
     }
-
+  };
+  
+  useEffect(() => {
     if (user.role === "kasir") {
       navigate("/orders");
     }
-  };
+  }, []);
 
   return (
     <Container>

@@ -11,3 +11,11 @@ export const getOrderDetail = (orderId) => {
 export const addItemToOrder = (orderId, data) => {
     return api.post(`/orders/${orderId}/items`, data);
 };
+
+export const closeOrder = (orderId) => {
+    return api.patch(`/orders/${orderId}/close`);
+};
+
+export const getOrders = () => {
+    return api.get("/orders");
+};

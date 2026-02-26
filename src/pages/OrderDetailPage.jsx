@@ -11,7 +11,7 @@ import {
   Button,
   MenuItem,
 } from "@mui/material";
-import { getOrderDetail, addItemToOrder } from "../api/orderApi";
+import { getOrderDetail, addItemToOrder, closeOrder } from "../api/orderApi";
 import { getFoods } from "../api/foodApi";
 import { useAuth } from "../context/AuthContext";
 
@@ -63,6 +63,15 @@ export default function OrderDetailPage() {
         food_id: "",
         quantity: 1,
       });
+      fetchOrder();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleCloseOrder = async () => {
+    try {
+      await closeOrder(id);
       fetchOrder();
     } catch (error) {
       console.error(error);
@@ -155,6 +164,18 @@ export default function OrderDetailPage() {
           </CardContent>
         </Card>
       ))}
+
+      {user.role === "kasir" && order.status === "open" && (
+        <Box mt={2}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleCloseOrder}
+          >
+            Close Order
+          </Button>
+        </Box>
+      )}
 
       {order.order_items?.length === 0 && (
         <Typography>No items yet</Typography>
