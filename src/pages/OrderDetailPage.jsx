@@ -7,21 +7,63 @@ import {
   CardContent,
   Divider,
   Box,
+  TextField,
+  Button,
+  MenuItem,
 } from "@mui/material";
-import { getOrderDetail } from "../api/orderApi";
+import { getOrderDetail, addItemToOrder } from "../api/orderApi";
+import { getFoods } from "../api/foodApi";
+import { useAuth } from "../context/AuthContext";
 
 export default function OrderDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
+
   const [order, setOrder] = useState(null);
+  const [foods, setFoods] = useState([]);
+  const [form, setForm] = useState({
+    food_id: "",
+    quantity: 1,
+  });
 
   useEffect(() => {
     fetchOrder();
+    fetchFoods();
   }, [id]);
 
   const fetchOrder = async () => {
     try {
       const response = await getOrderDetail(id);
       setOrder(response.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchFoods = async () => {
+    try {
+      const response = await getFoods();
+      setFoods(response.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddItem = async () => {
+    try {
+      await addItemToOrder(id, form);
+      setForm({
+        food_id: "",
+        quantity: 1,
+      });
+      fetchOrder();
     } catch (error) {
       console.error(error);
     }
@@ -48,6 +90,51 @@ export default function OrderDetailPage() {
           </Typography>
         </CardContent>
       </Card>
+
+        {user.role === "pelayan" && order.status === "open" && (
+          <Card sx={{ mb: 2 }}>
+            <CardContent>
+              <Typography variant="h6" mb={2}>
+                Add Item
+              </Typography>
+
+              <TextField
+                select
+                fullWidth
+                label="Food"
+                name="food_id"
+                value={form.food_id}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+              >
+                {foods.map((food) => (
+                  <MenuItem key={food.id} value={food.id}>
+                    {food.name} - Rp {food.price}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                fullWidth
+                label="Quantity"
+                name="quantity"
+                type="number"
+                value={form.quantity}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+              />
+
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddItem}
+                disabled={!form.food_id || form.quantity < 1}
+              >
+                Add
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
       <Typography variant="h6" mb={1}>
         Items
